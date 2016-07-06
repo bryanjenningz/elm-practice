@@ -2,7 +2,7 @@ import Html exposing (div, text, input, button)
 import Html.App exposing (beginnerProgram)
 import Html.Events exposing (onInput, onClick)
 import Html.Attributes exposing (style, type', placeholder)
-import String
+import String exposing (length)
 import Regex exposing (regex, contains)
 
 
@@ -30,12 +30,12 @@ type Msg = Username String
 
 
 view model =
-  div []
-    [ input [onInput Username, placeholder "Username"] []
-    , input [type' "password", onInput Password, placeholder "Password"] []
-    , input [type' "password", onInput PasswordAgain, placeholder "Confirm Password"] []
-    , input [onInput Age, placeholder "Age"] []
-    , button [type' "submit", onClick Submit] [text "Sign Up"]
+  div [containerStyle]
+    [ input [inputStyle, onInput Username, placeholder "Username"] []
+    , input [inputStyle, type' "password", onInput Password, placeholder "Password"] []
+    , input [inputStyle, type' "password", onInput PasswordAgain, placeholder "Confirm Password"] []
+    , input [inputStyle, onInput Age, placeholder "Age"] []
+    , button [inputStyle, type' "submit", onClick Submit] [text "Sign Up"]
     , verifyPassword model
     ]
 
@@ -43,15 +43,15 @@ view model =
 verifyPassword model =
   let (color, message) =
     if model.submitted then
-      if ((String.length model.password) < 8) then
+      if length model.password < 8 then
         ("red", "Password must be at least 8 characters long")
-      else if not (contains (regex "[0-9]") model.password) ||
-              not (contains (regex "[a-z]") model.password) ||
-              not (contains (regex "[A-Z]") model.password) then
+      else if (not <| contains (regex "[0-9]") model.password) ||
+              (not <| contains (regex "[a-z]") model.password) ||
+              (not <| contains (regex "[A-Z]") model.password) then
         ("red", "Password must contain lowercase, uppercase, and a number")
       else if model.password /= model.passwordAgain then
         ("red", "Passwords don't match")
-      else if not (contains (regex "^[0-9]+$") model.age) then
+      else if not <| contains (regex "^[0-9]+$") model.age then
         ("red", "Age must be a number")
       else
         ("green", "OK")
@@ -77,3 +77,19 @@ update msg model =
     
     Submit ->
       { model | submitted = True }
+
+
+containerStyle =
+  style
+    [ ("width", "400px")
+    , ("padding", "10px 50px")
+    , ("margin", "0 auto")
+    ]
+
+
+inputStyle =
+  style
+    [ ("box-sizing", "border-box")
+    , ("width", "100%")
+    , ("padding", "5px")
+    ]
