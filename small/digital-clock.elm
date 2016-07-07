@@ -1,6 +1,7 @@
 import Html exposing (div, text)
 import Html.App exposing (program)
 import Time exposing (Time, inSeconds, inMinutes, inHours)
+import String
 
 
 main =
@@ -34,7 +35,14 @@ view model =
       toString <| (floor (inHours model) `rem` 12) + 1 - 8
   in
     div []
-      [ text <| hours ++ ":" ++ minutes ++ ":" ++ seconds ]
+      [ text <| hours ++ ":" ++ padStringTime minutes ++ ":" ++ padStringTime seconds ]
+
+
+padStringTime stringNumber =
+  if String.length stringNumber == 2 then
+    stringNumber
+  else
+    padStringTime ("0" ++ stringNumber)
 
 
 update msg model =
