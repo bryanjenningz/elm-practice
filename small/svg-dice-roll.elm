@@ -32,7 +32,7 @@ type alias Model =
 view : Model -> Html Msg
 view model =
   div [centered]
-    [ button [ buttonStyle, onClick Roll ] [ text "Roll" ]
+    [ button [ centered, buttonStyle, onClick Roll ] [ text "Roll" ]
     , dieView model.dieFace
     , dieView model.dieFace2
     ]
@@ -119,6 +119,7 @@ centered =
   style
     [ ("text-align", "center")
     , ("display", "block")
+    , ("margin", "0 auto")
     ]
 
 
