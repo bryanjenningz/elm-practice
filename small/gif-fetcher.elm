@@ -1,5 +1,5 @@
 import Html exposing (div, h2, button, text, img, br, input)
-import Html.Attributes exposing (src, placeholder)
+import Html.Attributes exposing (src, placeholder, disabled)
 import Html.App exposing (program)
 import Html.Events exposing (onClick, onInput)
 import Task
@@ -20,6 +20,7 @@ type alias Model =
   { topic : String
   , gifUrl : String
   , errorMessage : String
+  , isFetching : Bool
   }
 
 
@@ -31,7 +32,7 @@ type Msg
 
 
 init topic =
-  (Model topic "waiting.gif" "", getRandomGif topic)
+  (Model topic "waiting.gif" "" True, getRandomGif topic)
 
 
 subscriptions model =
@@ -42,7 +43,7 @@ view model =
   div []
     [ h2 [] [ text <| "Topic: " ++ model.topic ]
     , input [ onInput ChangeTopic, placeholder "Change topic" ] []
-    , button [ onClick FetchGif ] [ text "Get GIF!" ]
+    , button [ onClick FetchGif, disabled model.isFetching ] [ text "Get GIF!" ]
     , br [] []
     , img [ src model.gifUrl ] []
     , text model.errorMessage
@@ -52,13 +53,13 @@ view model =
 update msg model =
   case msg of
     FetchGif ->
-      (model, getRandomGif model.topic)
+      ({ model | isFetching = True }, getRandomGif model.topic)
     
     FetchSuccess newUrl ->
-      (Model model.topic newUrl "", Cmd.none)
+      (Model model.topic newUrl "" False, Cmd.none)
     
     FetchFail error ->
-      ({ model | errorMessage = (toString error) }, Cmd.none)
+      ({ model | errorMessage = (toString error), isFetching = False }, Cmd.none)
      
     ChangeTopic topic ->
       ({ model | topic = topic }, Cmd.none)
