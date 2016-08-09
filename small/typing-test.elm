@@ -78,7 +78,7 @@ update msg model =
   case msg of
     UpdateInputWord inputWord ->
       if endsWith " " inputWord && 
-      model.inputWord == dropRight 1 inputWord &&
+      (withDefault "" <| get model.wordIndex words) == dropRight 1 inputWord &&
       model.wordIndex < length words then
         ( { model | inputWord = ""
           , wordIndex = model.wordIndex + 1
