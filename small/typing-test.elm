@@ -26,9 +26,9 @@ main =
 type alias Model =
   { inputWord : String
   , wordIndex : Int
-  , time : Int
+  , time : Float
   , runClock : Bool
-  , wpm : Float
+  , charCount : Int
   }
 
 init = (Model "" 0 0 False 0, Cmd.none)
@@ -36,15 +36,18 @@ init = (Model "" 0 0 False 0, Cmd.none)
 view model =
   div []
     [ input [ onInput UpdateInputWord, value model.inputWord ] []
-    , span [] [ text <| toString model.wpm ++ " wpm" ]
+    , viewWpm model
     , div [] <| toList <| Array.indexedMap (viewWord model) words
-    , div
-        [ barContainerStyle ]
-        [ div 
-          [ barStyle <|
-              100 * (toFloat model.wordIndex / toFloat (length words)) ]
-          []
-        ]
+    , viewBar model
+    ]
+
+viewBar model =
+  div
+    [ barContainerStyle ]
+    [ div 
+      [ barStyle <|
+          100 * (toFloat model.wordIndex / toFloat (length words)) ]
+      []
     ]
 
 viewWord model index word =
@@ -56,28 +59,49 @@ viewWord model index word =
     ]
     [ text (word ++ " ") ]
 
+viewWpm model =
+  span []
+    [ text <| toString
+        (round (if isNaN (wpm model) then
+                  0
+                else 
+                  (wpm model)
+               )
+        ) ++ " wpm" ]
+  
+wpm : Model -> Float
+wpm model =
+  (toFloat model.charCount / (model.time / 60)) / 4
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     UpdateInputWord inputWord ->
-      if endsWith " " inputWord && model.inputWord == dropRight 1 inputWord then
+      if endsWith " " inputWord && 
+      model.inputWord == dropRight 1 inputWord &&
+      model.wordIndex < length words then
         ( { model | inputWord = ""
           , wordIndex = model.wordIndex + 1
-          , runClock = model.wordIndex < length words
-          , wpm = (toFloat (String.length sentence) / (toFloat model.time / 60)) / 5
-          },
-          Cmd.none
+          , runClock = model.wordIndex + 1 < length words
+          , charCount = model.charCount + String.length model.inputWord
+          }
+        , Cmd.none
         )
       else
-        ( { model | inputWord = inputWord }, Cmd.none )
+        ( { model | inputWord = inputWord
+          , runClock = model.wordIndex < length words
+          }
+        , Cmd.none
+        )
         
     Tick time ->
       if model.runClock then
-        ( { model | time = model.time + 1 }, Cmd.none )
+        ( { model | time = model.time + 0.1 }, Cmd.none )
       else
         ( model, Cmd.none )
 
 subscriptions model =
-  Time.every second Tick
+  Time.every (0.1 * second) Tick
 
 highlightStyle =
   style [ ("background-color", "yellow") ]
